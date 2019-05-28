@@ -13,8 +13,8 @@
 # 11. Capital Expenditure (CAPEX)
 # 12. Free Cash Flow (FCF)
 # 
-# Note1: All numberical figures are in millions (mil).
-#The Financial Information will be stored in a csv output file. 
+# Note1: All numerical figures are in millions (mil).
+#The Financial Information will be stored in a .csv output file. 
 
 $exc =  Read-Host -Prompt "[1]   HKEX `n[2]   NASDAQ `n[3]   NYSE `nWhich Stock Exchange do you want? Key in the number `n"
 
