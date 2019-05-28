@@ -4,31 +4,31 @@ This is my first Windows Powershell Project. This tool helps to extract the fina
 
 The following financial information are extracted
 
-From Income Statement:
+**From Income Statement:**
 1) Revenue
 2) Cost of Goods Sold (COGS)
 3) Gross Profit
 4) Operating Income
 5) Total number of shares
 
-From Balance Sheet:
+**From Balance Sheet:**
 1) Total Cash
 2) Total Debt
 3) Total Equity
 4) Inventory
 
-From Cash Flow Statement:
+**From Cash Flow Statement:**
 1) Operating Cash Flow (OCF)
 2) Capital Expenditure (CAPEX)
 3) Free Cash Flow (FCF)
 
-Currently, the tool is only able to extract financial information from stocks in the following stock exchanges
+**Stock Exchanges Supported:**
 1) HKEX
 2) NASDAQ
 3) NYSE AMERICAN
 4) NYSE
 
-NOTE: There's a difference between NYSE American and NYSE. 
+*NOTE: There's a difference between NYSE American and NYSE.*
 
 ## Usage
 
@@ -42,4 +42,4 @@ NOTE: There's a difference between NYSE American and NYSE.
 4) Key in the stock's ticker symbol. If the stock is a HKEX stock, key in the 4 digit stock code.
 5) Wait...
 6) The .csv file will be saved in the directory as "Financials_(ticker symbol).csv"
-7) If you encounter any errors, please exit the program and retry from step 2.
+*7) If you encounter any errors, please exit the program and retry from step 2.*
