@@ -25,16 +25,21 @@ From Cash Flow Statement:
 Currently, the tool is only able to extract financial information from stocks in the following stock exchanges
 1) HKEX
 2) NASDAQ
-3) NYSE
+3) NYSE AMERICAN
+4) NYSE
+
+NOTE: There's a difference between NYSE American and NYSE. 
 
 ## Usage
 
 1) Download and save the script "ExtractFinancials.ps1" in your desired directory
 2) From the directory, "Right-click" the file -> "Run with PowerShell"
-3) Select the stock exchange
-  [1] HKEX
-  [2] NASDAQ
-  [3] NYSE
+3) Select the stock exchange<br />
+    [1] HKEX<br />
+    [2] NASDAQ<br />
+    [3] NYSE AMERICAN<br />
+    [4] NYSE<br />
 4) Key in the stock's ticker symbol. If the stock is a HKEX stock, key in the 4 digit stock code.
 5) Wait...
 6) The .csv file will be saved in the directory as "Financials_(ticker symbol).csv"
+7) If you encounter any errors, please exit the program and retry from step 2.
