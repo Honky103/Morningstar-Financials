@@ -42,4 +42,4 @@ The following financial information are extracted
 4) Key in the stock's ticker symbol. If the stock is a HKEX stock, key in the 4 digit stock code.
 5) Wait...
 6) The .csv file will be saved in the directory as "Financials_(ticker symbol).csv"
-*7) If you encounter any errors, please exit the program and retry from step 2.*
+7) If you encounter any errors, please exit the program and retry from step 2.
