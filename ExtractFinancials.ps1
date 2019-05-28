@@ -1,4 +1,4 @@
-﻿#Authored by Pang Hong Ming
+#Authored by Pang Hong Ming
 #This program extracts the following Financial information about the Stock from www.morningstar.com
 # 1. Revenue
 # 2. Cost of Revenue (COGS)
@@ -16,18 +16,18 @@
 # Note1: All numerical figures are in millions (mil).
 #The Financial Information will be stored in a .csv output file. 
 
-$exc =  Read-Host -Prompt "[1]   HKEX `n[2]   NASDAQ `n[3]   NYSE `nWhich Stock Exchange do you want? Key in the number `n"
+$exc =  Read-Host -Prompt "[1]   HKEX `n[2]   NASDAQ `n[3]   NYSE AMERICAN `n[4]   NYSE `nWhich Stock Exchange do you want? Key in the number `n"
 
-while (-not($exc -le 3 -and $exc -ge 0))
+while (-not($exc -le 4 -and $exc -ge 0))
 {
-    $exc =  Read-Host -Prompt "Perhaps you made a mistake, please try again.`n[1]   HKEX `n[2]   NASDAQ `n[3]   NYSE `nWhich Stock Exchange do you want? Key in the number `n"
+    $exc =  Read-Host -Prompt "Perhaps you made a mistake, please try again.`n[1]   HKEX `n[2]   NASDAQ `n[3]   NYSE AMERICAN `n[4]   NYSE `nWhich Stock Exchange do you want? Key in the number `n"
 }
 
 switch($exc) {
    1 {$exchange = 'XHKG'; break} 
    2 {$exchange = 'XNAS'; break} 
    3 {$exchange = 'XASE'; break}
-#   4 {$exchange = 'XASX'; break}
+   4 {$exchange = 'XNYS'; break}
 }
 
 $stc =  Read-Host -Prompt "Please enter your stock code/ticker symbol. For HKEX stocks, enter the 4 digit stock code.`n"
