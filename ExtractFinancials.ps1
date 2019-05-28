@@ -1,5 +1,4 @@
 ﻿#Authored by Pang Hong Ming
-#Key in Stock Exchange Symbol and Stock Code in Lines 20 and 21
 #This program extracts the following Financial information about the Stock from www.morningstar.com
 # 1. Revenue
 # 2. Cost of Revenue (COGS)
@@ -14,12 +13,12 @@
 # 11. Capital Expenditure (CAPEX)
 # 12. Free Cash Flow (FCF)
 # 
-# Note: All numberical figures are in millions (mil).
+# Note1: All numberical figures are in millions (mil).
 #The Financial Information will be stored in a csv output file. 
 
 $exc =  Read-Host -Prompt "[1]   HKEX `n[2]   NASDAQ `n[3]   NYSE `nWhich Stock Exchange do you want? Key in the number `n"
 
-while (-not($exc -eq 1 -or $exc -eq 2 -or $exc -eq 3))
+while (-not($exc -le 3 -and $exc -ge 0))
 {
     $exc =  Read-Host -Prompt "Perhaps you made a mistake, please try again.`n[1]   HKEX `n[2]   NASDAQ `n[3]   NYSE `nWhich Stock Exchange do you want? Key in the number `n"
 }
@@ -28,19 +27,21 @@ switch($exc) {
    1 {$exchange = 'XHKG'; break} 
    2 {$exchange = 'XNAS'; break} 
    3 {$exchange = 'XASE'; break}
+#   4 {$exchange = 'XASX'; break}
 }
 
-$stc =  Read-Host -Prompt "Please enter your stock code`n"
+$stc =  Read-Host -Prompt "Please enter your stock code/ticker symbol. For HKEX stocks, enter the 4 digit stock code.`n"
 
 if ($exchange -eq 'XHKG')
 {
-    $stockcode = '0'+$stc.toString()
+    $stc = '0'+$stc.toString()
 }
 
+
 #Opens the Internet explorer and navigates to the stock's morningstar main page.
-$url = "www.morningstar.com/stocks/"+ $exchange + "/" +$stockcode + "/quote.html"
+$url = "www.morningstar.com/stocks/"+ $exchange + "/" +$stc + "/quote.html"
 $ie = New-Object -com internetexplorer.application;
-$ie.visible = $true;
+$ie.visible = $false;
 $ie.navigate($url);
 
 Start-Sleep -s 3
@@ -194,5 +195,5 @@ for($j=0;$j -lt 3; $j++)
 $table | format-table -AutoSize
 
 #Saves the file into csv
-$savefilelocation = "./Financials_"+$stockcode+".csv"
+$savefilelocation = "./Financials_"+$stc+".csv"
 $table |Export-csv $savefilelocation
