@@ -1,6 +1,6 @@
 # Morningstar-Financials
 ## Introduction
-This is my first Windows Powershell Project. This tool helps to extract the financial information from www.morningstar.com, which aims to help investors automate the process of copying financials out for their own analysis and chart plotting. The financial information is saved in a .csv file located at the same directory of where the tool is located.
+This is my first Windows Powershell Project. This tool helps to extract the financial information from www.morningstar.com, which aims to help investors automate the process of copying financials out for their own analysis and chart plotting. The financial information is saved in a .csv file.
 
 The following financial information are extracted
 
@@ -38,8 +38,8 @@ The following financial information are extracted
     [1] HKEX<br />
     [2] NASDAQ<br />
     [3] NYSE AMERICAN<br />
-    [4] NYSE<br />
+    [4] NYSE (Currently not working for banks and financial institutions) <br />
 4) Key in the stock's ticker symbol. If the stock is a HKEX stock, key in the 4 digit stock code.
 5) Wait...
-6) The .csv file will be saved in the directory as "Financials_(ticker symbol).csv"
+6) The .csv file will be saved in the directory as "Financials_(ticker symbol).csv". You will be able to view the save file location once it is complete
 7) If you encounter any errors, please exit the program and retry from step 2.
