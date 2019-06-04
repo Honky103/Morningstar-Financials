@@ -16,14 +16,19 @@
 # Note1: All numerical figures are in millions (mil).
 #The Financial Information will be stored in a .csv output file. 
 
-$exc =  Read-Host -Prompt "[1]   HKEX `n[2]   NASDAQ `n[3]   NYSE AMERICAN `n[4]   NYSE `nWhich Stock Exchange do you want? Key in the number `n"
+$ie = New-Object -com internetexplorer.application;
+$ie.visible = $false;
+$tabName = "Financials"
+$table = New-Object system.Data.DataTable “$tabName”
+$year = $null
+$incomeurl = $null
+$Timeout = 60 #set timeout of web request to 60s
 
-while (-not($exc -le 4 -and $exc -ge 0))
+#Requests user to select stock exchange and input stock code
+Do{$exc =  Read-Host -Prompt "[1]   HKEX `n[2]   NASDAQ `n[3]   NYSE AMERICAN `n[4]   NYSE (Currently not working for banks and financial institutions) `nWhich Stock Exchange do you want? Key in the number `n"} while ((1..4) -notcontains $exc)
+
+switch($exc) 
 {
-    $exc =  Read-Host -Prompt "Perhaps you made a mistake, please try again.`n[1]   HKEX `n[2]   NASDAQ `n[3]   NYSE AMERICAN `n[4]   NYSE `nWhich Stock Exchange do you want? Key in the number `n"
-}
-
-switch($exc) {
    1 {$exchange = 'XHKG'; break} 
    2 {$exchange = 'XNAS'; break} 
    3 {$exchange = 'XASE'; break}
@@ -37,31 +42,45 @@ if ($exchange -eq 'XHKG')
     $stc = '0'+$stc.toString()
 }
 
-#Opens the Internet explorer and navigates to the stock's morningstar main page.
+#Opens the Internet explorer and navigates to the stock's morningstar page.
 $url = "www.morningstar.com/stocks/"+ $exchange + "/" +$stc + "/quote.html"
-$ie = New-Object -com internetexplorer.application;
-$ie.visible = $false;
 $ie.navigate($url);
 
-Write-Host "Connecting to" $url "Please wait patiently... ..."
-
+#let page load
+Write-Host "Connecting to" $url "please wait patiently... ..."
 Start-Sleep -s 3
-while($ie.busy) {Start-Sleep -s 3} #let page load
+while($ie.busy) {Start-Sleep -s 3}
+Start-Sleep -s 3
+
+$timer = [Diagnostics.Stopwatch]::StartNew()
 
 #Navigates to the page with the full Income Statement (i.e. click on all financials)
-$incomeurl = $ie.document.getElementsByTagName('div') |
-  Where-Object { $_.className -eq 'sal-component-footer ng-scope' } |
-  ForEach-Object { $_.getElementsByTagName('a') } |
-  Where-Object { $_.className -eq 'ng-binding' } |
-  Select-Object -Expand href
+while(($timer.Elapsed.TotalSeconds -le $Timeout) -and $incomeurl -eq $null)
+{
+    $incomeurl = $ie.document.getElementsByTagName('div') |
+    Where-Object { $_.className -eq 'sal-component-footer ng-scope' } |
+    ForEach-Object { $_.getElementsByTagName('a') } |
+    Where-Object { $_.className -eq 'ng-binding' } |
+    Select-Object -Expand href
+}
+
+#Checks if the request timeout, if request is timeout, outputs that the stock code is invalid. (highly likely wrong stockcode)
+$timer.Stop()
+if ($timer.Elapsed.TotalSeconds -gt $Timeout) {
+     Write-Host 'Could not connect to' $url ', please check your stock code/ticker symbol' -ForegroundColor Red
+     Read-Host "Press Enter to exit"
+     exit
+ }
 
 Write-Host "Connected to" $url
 Write-Host -NoNewLine "Extracting from Income Statement............."
 
 $ie.navigate($incomeurl)
 
+#let page load
 Start-Sleep -s 3
-while($ie.busy) {Start-Sleep -s 3} #let page load
+while($ie.busy) {Start-Sleep -s 3}
+Start-Sleep -s 3
 
 #Obtains the urls for the full income statement, balance sheet, and cash flow for navigation
 $balanceurl = $ie.document.getElementsByTagName('ul') |
@@ -69,21 +88,17 @@ $balanceurl = $ie.document.getElementsByTagName('ul') |
   ForEach-Object { $_.getElementsByTagName('a') } |
   Select-Object -Expand href
 
-$tabName = "Financials"
-
-#Create Financial Table
-$table = New-Object system.Data.DataTable “$tabName”
-
-#Gets Year values for table columns
-$year = $null
-
-$counter = 0;
-$ie.document.getElementsByTagName('div') |
-  Where-Object { $_.className -eq 'year column6Width109px' } |
-  ForEach-Object {$year+=@{$counter=$_.textContent};$counter++}
+#Gets the last 5 year values from Morningstar's table
+while($year -eq $null)
+{
+    $counter = 0;
+    $ie.document.getElementsByTagName('div') |
+    Where-Object { $_.className -eq 'year column6Width109px' } |
+    ForEach-Object {$year+=@{$counter=$_.textContent};$counter++}
+}
 
 #Define Columns of table with year values
-$col1 = New-Object system.Data.DataColumn Parameter,([string])
+$col1 = New-Object system.Data.DataColumn Millions,([string])
 $col2 = New-Object system.Data.DataColumn $year[0],([string])
 $col3 = New-Object system.Data.DataColumn $year[1],([string])
 $col4 = New-Object system.Data.DataColumn $year[2],([string])
@@ -91,7 +106,6 @@ $col5 = New-Object system.Data.DataColumn $year[3],([string])
 $col6 = New-Object system.Data.DataColumn $year[4],([string])
 $col7 = New-Object system.Data.DataColumn $year[5],([string])
 
-#Add the Columns
 $table.columns.add($col1)
 $table.columns.add($col2)
 $table.columns.add($col3)
@@ -109,12 +123,13 @@ $table.columns.add($col7)
 
 $values ='Revenue', 'Cost of Revenue','Gross Profit','Operating income (EBIT)','Weighted Shareholdings'
 
+#Element ID of the information from the HTML code
 $elements = 'i1','i6','i10','i30','i86'
 for($j=0;$j -lt 5; $j++)
 {
     #Create a row in the table
     $row = $table.NewRow()
-    $row.Parameter = $values[$j];
+    $row.Millions = $values[$j];
 
     #Extract values for Parameter
     $str = 'data_' + $elements[$j]
@@ -122,6 +137,7 @@ for($j=0;$j -lt 5; $j++)
     for($i=0;$i -lt 6;$i++)
     {
         $row[$year[$i]]=$children[$i].textContent
+#        $row[$year[$i]]
     }
     #Add the row to the table
     $table.Rows.Add($row)
@@ -134,8 +150,10 @@ Write-Host -NoNewLine "Extracting from Balance Sheet............."
 
 $ie.navigate($balanceurl[1])
 
+#let page load
 Start-Sleep -s 3
-while($ie.busy) {Start-Sleep -s 3} #let page load
+while($ie.busy) {Start-Sleep -s 3}
+Start-Sleep -s 3
 
 #Extracting relevant information from the Balance Sheet
 # 1. Total Cash
@@ -146,13 +164,14 @@ while($ie.busy) {Start-Sleep -s 3} #let page load
 
 $values = 'Total Cash','Inventory','Total Debt','Total Equity'
 
+#Element ID of the information from the HTML code
 $elements='ttgg1','i4','ttg5','ttg8'
 
 for($j=0;$j -lt 4; $j++)
 {
     #Create a row in the table
     $row = $table.NewRow()
-    $row.Parameter = $values[$j];
+    $row.Millions = $values[$j];
 
     #Extract values for Parameter
     $str = 'data_' + $elements[$j]
@@ -160,6 +179,7 @@ for($j=0;$j -lt 4; $j++)
     for($i=0;$i -lt 5;$i++)
     {
         $row[$year[$i]]=$children[$i].textContent
+#        $row[$year[$i]]
     }
     #Add the row to the table
     $table.Rows.Add($row)
@@ -172,8 +192,10 @@ Write-Host -NoNewLine "Extracting from Cash Flow Statement............."
 
 $ie.navigate($balanceurl[2])
 
+#let page load
 Start-Sleep -s 3
-while($ie.busy) {Start-Sleep -s 3} #let page load
+while($ie.busy) {Start-Sleep -s 3}
+Start-Sleep -s 3
 
 #Extracting relevant information from the Cash Flow Statement
 # 1. Operating Cash Flow
@@ -182,13 +204,14 @@ while($ie.busy) {Start-Sleep -s 3} #let page load
 
 $values = 'Operating Cash Flow','CAPEX','Free Cash Flow'
 
+#Element ID of the information from the HTML code
 $elements='i100','i96','i97'
 
 for($j=0;$j -lt 3; $j++)
 {
     #Create a row in the table
     $row = $table.NewRow()
-    $row.Parameter = $values[$j];
+    $row.Millions = $values[$j];
 
     #Extract values for Parameter
     $str = 'data_' + $elements[$j]
@@ -196,6 +219,7 @@ for($j=0;$j -lt 3; $j++)
     for($i=0;$i -lt 6;$i++)
     {
         $row[$year[$i]]=$children[$i].textContent
+#        $row[$year[$i]]
     }
     #Add the row to the table
     $table.Rows.Add($row)
@@ -203,18 +227,18 @@ for($j=0;$j -lt 3; $j++)
 
 Write-Host "Done"
 
-Write-Host -NoNewLine "Saving file................"
-
-#Displays data in the console for fun
-$table | format-table -AutoSize
-
 #Saves the file into csv
+Write-Host -NoNewLine "Saving file................"
 $savefilename = "Financials_"+$stc+".csv"
 $table |Export-csv $savefilename
 Write-Host "Done"
 $pwd = get-location
 $savefilelocation = $pwd.Path + "\" + $savefilename;
-Write-Host "Your file is saved at" $savefilelocation
+Write-Host "Your file is saved at" $savefilelocation -ForegroundColor Green
+$ie.quit()
 
-Read-Host "Press any key to exit..."
+#Displays data in the console for quick view
+$table | format-table -AutoSize
+
+Read-Host "Press Enter to exit"
 exit
