@@ -21,7 +21,7 @@
 $ie = New-Object -com internetexplorer.application;
 $ie.visible = $false;
 $tabName = 'Financials'
-$financial_table = New-Object system.Data.DataTable â€œ$tabNameâ€
+$financial_table = New-Object system.Data.DataTable Ã¢â‚¬Å“$tabNameÃ¢â‚¬Â
 
 $gim_score = 0;
 $year = $null
@@ -147,7 +147,7 @@ for($j=0;$j -lt 5; $j++)
           $temp = $temp -replace '[()]',"";
           $temp = 0-[double]$temp;  
         } 
-        if ($temp -eq '—')
+        if ($temp -eq 'â€”')
         {
             $temp = 0;
         }
@@ -199,7 +199,7 @@ for($j=0;$j -lt 6; $j++)
           $temp = $temp -replace '[()]',"";
           $temp = 0-[double]$temp;  
         } 
-        if ($temp -eq '—')
+        if ($temp -eq 'â€”')
         {
             $temp = 0;
         }
@@ -249,7 +249,7 @@ for($j=0;$j -lt 3; $j++)
           $temp = $temp -replace '[()]',"";
           $temp = 0-[double]$temp;  
         }
-        if ($temp -eq '—')
+        if ($temp -eq 'â€”')
         {
             $temp = 0;
         }
@@ -266,18 +266,19 @@ $ie.quit()
 #Displays data in the console for quick view
 $financial_table | format-table -AutoSize
 
-#Saves the file into csv
-Write-Host -NoNewLine "Saving file................"
-$savefilename = "Financials_"+$stc+".csv"
-$table |Export-csv $savefilename
-Write-Host "Done"
-$pwd = get-location
-$savefilelocation = $pwd.Path + "\" + $savefilename;
-Write-Host "Your file is saved at" $savefilelocation -ForegroundColor Green
-$ie.quit()
+$pwd = get-location;
+$savefiledirectory = $pwd.Path + "\" + $stc;
+if (!(Test-Path $savefiledirectory))
+{
+    mkdir $stc;
+}
 
-#Displays data in the console for quick view
-$table | format-table -AutoSize
+#Saves financial file into csv
+Write-Host -NoNewLine "Saving financial file........................"
+$savefilename = $stc + "\Financials_"+$stc+".csv"
+$financial_table |Export-csv $savefilename
+Write-Host "Done"
+Write-Host "Your file is saved at" $savefiledirectory -ForegroundColor Green
 
 Read-Host "Press Enter to exit"
 exit
