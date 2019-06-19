@@ -1,25 +1,29 @@
 #Authored by Pang Hong Ming
-#This program extracts the following Financial information about the Stock from www.morningstar.com
+###### This program extracts the following Financial information about the Stock from www.morningstar.com ######
 # 1. Revenue
 # 2. Cost of Revenue (COGS)
 # 3. Gross Profit
 # 4. Operating Income (EBIT)
 # 5. Total No. of Shares
-# 6. Total Cash
-# 7. Total Debt
-# 8. Total Equity
-# 9. Inventory
-# 10. Operating Cash Flow (OCF)
-# 11. Capital Expenditure (CAPEX)
-# 12. Free Cash Flow (FCF)
+# 6. Account Receivables
+# 7. Account Payables
+# 8. Total Cash
+# 9. Total Debt
+# 10. Total Equity
+# 11. Inventory
+# 12. Operating Cash Flow (OCF)
+# 13. Capital Expenditure (CAPEX)
+# 14. Free Cash Flow (FCF)
 # 
 # Note1: All numerical figures are in millions (mil).
 #The Financial Information will be stored in a .csv output file. 
 
 $ie = New-Object -com internetexplorer.application;
 $ie.visible = $false;
-$tabName = "Financials"
-$table = New-Object system.Data.DataTable “$tabName”
+$tabName = 'Financials'
+$financial_table = New-Object system.Data.DataTable â€œ$tabNameâ€
+
+$gim_score = 0;
 $year = $null
 $incomeurl = $null
 $Timeout = 60 #set timeout of web request to 60s
@@ -106,13 +110,13 @@ $col5 = New-Object system.Data.DataColumn $year[3],([string])
 $col6 = New-Object system.Data.DataColumn $year[4],([string])
 $col7 = New-Object system.Data.DataColumn $year[5],([string])
 
-$table.columns.add($col1)
-$table.columns.add($col2)
-$table.columns.add($col3)
-$table.columns.add($col4)
-$table.columns.add($col5)
-$table.columns.add($col6)
-$table.columns.add($col7)
+$financial_table.columns.add($col1)
+$financial_table.columns.add($col2)
+$financial_table.columns.add($col3)
+$financial_table.columns.add($col4)
+$financial_table.columns.add($col5)
+$financial_table.columns.add($col6)
+$financial_table.columns.add($col7)
 
 #Extracting relevant information from the Income Statement
 # 1. Revenue
@@ -128,7 +132,7 @@ $elements = 'i1','i6','i10','i30','i86'
 for($j=0;$j -lt 5; $j++)
 {
     #Create a row in the table
-    $row = $table.NewRow()
+    $row = $financial_table.NewRow()
     $row.Millions = $values[$j];
 
     #Extract values for Parameter
@@ -136,15 +140,25 @@ for($j=0;$j -lt 5; $j++)
     $children=$ie.document.getElementById($str).childNodes
     for($i=0;$i -lt 6;$i++)
     {
-        $row[$year[$i]]=$children[$i].textContent
-#        $row[$year[$i]]
+        $temp = $null;
+        $temp=$children[$i].textContent
+        if ($temp.startsWith('('))
+        {
+          $temp = $temp -replace '[()]',"";
+          $temp = 0-[double]$temp;  
+        } 
+        if ($temp -eq '—')
+        {
+            $temp = 0;
+        }
+        $row[$year[$i]] = $temp;
     }
     #Add the row to the table
-    $table.Rows.Add($row)
+    $financial_table.Rows.Add($row)
 }
 
 Write-Host "Done"
-Write-Host -NoNewLine "Extracting from Balance Sheet............."
+Write-Host -NoNewLine "Extracting from Balance Sheet................"
 
 #Navigates to Balance Sheet
 
@@ -162,15 +176,15 @@ Start-Sleep -s 3
 # 4. Total Debt
 # 5. Total Equity
 
-$values = 'Total Cash','Inventory','Total Debt','Total Equity'
+$values = 'Accounts Receivables','Accounts Payables','Inventory','Total Cash','Total Debt','Total Equity'
 
 #Element ID of the information from the HTML code
-$elements='ttgg1','i4','ttg5','ttg8'
+$elements='i3','i43','i4','ttgg1','ttg5','ttg8'
 
-for($j=0;$j -lt 4; $j++)
+for($j=0;$j -lt 6; $j++)
 {
     #Create a row in the table
-    $row = $table.NewRow()
+    $row = $financial_table.NewRow()
     $row.Millions = $values[$j];
 
     #Extract values for Parameter
@@ -178,15 +192,25 @@ for($j=0;$j -lt 4; $j++)
     $children=$ie.document.getElementById($str).childNodes
     for($i=0;$i -lt 5;$i++)
     {
-        $row[$year[$i]]=$children[$i].textContent
-#        $row[$year[$i]]
+        $temp = $null;
+        $temp=$children[$i].textContent
+        if ($temp.startsWith('('))
+        {
+          $temp = $temp -replace '[()]',"";
+          $temp = 0-[double]$temp;  
+        } 
+        if ($temp -eq '—')
+        {
+            $temp = 0;
+        }
+        $row[$year[$i]] = $temp;
     }
     #Add the row to the table
-    $table.Rows.Add($row)
+    $financial_table.Rows.Add($row)
 }
 
 Write-Host "Done"
-Write-Host -NoNewLine "Extracting from Cash Flow Statement............."
+Write-Host -NoNewLine "Extracting from Cash Flow Statement.........."
 
 #Navigates to Cash Flow Statement
 
@@ -210,7 +234,7 @@ $elements='i100','i96','i97'
 for($j=0;$j -lt 3; $j++)
 {
     #Create a row in the table
-    $row = $table.NewRow()
+    $row = $financial_table.NewRow()
     $row.Millions = $values[$j];
 
     #Extract values for Parameter
@@ -218,14 +242,29 @@ for($j=0;$j -lt 3; $j++)
     $children=$ie.document.getElementById($str).childNodes
     for($i=0;$i -lt 6;$i++)
     {
-        $row[$year[$i]]=$children[$i].textContent
-#        $row[$year[$i]]
+        $temp = $null;
+        $temp=$children[$i].textContent
+        if ($temp.startsWith('('))
+        {
+          $temp = $temp -replace '[()]',"";
+          $temp = 0-[double]$temp;  
+        }
+        if ($temp -eq '—')
+        {
+            $temp = 0;
+        }
+        $row[$year[$i]] = $temp;
     }
     #Add the row to the table
-    $table.Rows.Add($row)
+    $financial_table.Rows.Add($row)
 }
 
 Write-Host "Done"
+
+$ie.quit()
+
+#Displays data in the console for quick view
+$financial_table | format-table -AutoSize
 
 #Saves the file into csv
 Write-Host -NoNewLine "Saving file................"
