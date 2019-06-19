@@ -12,10 +12,12 @@ The following financial information are extracted
 5) Total number of shares
 
 **From Balance Sheet:**
-1) Total Cash
-2) Total Debt
-3) Total Equity
-4) Inventory
+1) Account Receivables
+2) Account Payables
+3) Inventory
+4) Total Cash
+5) Total Debt
+6) Total Equity
 
 **From Cash Flow Statement:**
 1) Operating Cash Flow (OCF)
